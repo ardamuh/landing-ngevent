@@ -45,7 +45,7 @@ export default function FormSignin() {
       />
 
       <TextInput
-        label={"Password (6 characters)"}
+        label={"Password"}
         type={"password"}
         name="password"
         value={form.password}

@@ -87,7 +87,7 @@ export default function FormSignin() {
             type={"text"}
             name="lastName"
             value={form.lastName}
-            placeholder="First name here"
+            placeholder="Last name here"
             onChange={handleChange}
           />
 

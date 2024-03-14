@@ -9,29 +9,30 @@ import { getData } from "../utils/fetchData";
 import { useRouter } from "next/router"; // Impor useRouter
 
 export default function Browse({ data }) {
-  const [filteredData, setFilteredData] = useState(data);
-  const router = useRouter();
+  const [filteredData, setFilteredData] = useState(data); // State untuk menyimpan data acara yang telah difilter
+  const router = useRouter(); // Inisialisasi useRouter untuk mendapatkan parameter pencarian
   const { search } = router.query; // Ambil parameter search dari query URL
 
   useEffect(() => {
     if (search) {
-      const lowercasedTerm = search.toLowerCase();
+      const lowercasedTerm = search.toLowerCase(); // Ubah parameter pencarian menjadi lowercase
       const filtered = data.filter((event) => {
-        const titleMatch = event.title.toLowerCase().includes(lowercasedTerm);
+        // Filter data events berdasarkan pencarian
+        const titleMatch = event.title.toLowerCase().includes(lowercasedTerm); // Cek apakah judul mengandung pencarian
         const categoryMatch =
           event.category &&
-          event.category.name.toLowerCase().includes(lowercasedTerm);
+          event.category.name.toLowerCase().includes(lowercasedTerm); // Cek apakah kategori mengandung pencarian
         const venueMatch =
           event.venueName &&
-          event.venueName.toLowerCase().includes(lowercasedTerm); // Menambahkan pencarian berdasarkan venueName
-        return titleMatch || categoryMatch || venueMatch;
+          event.venueName.toLowerCase().includes(lowercasedTerm); // Cek apakah nama tempat acara mengandung pencarian
+        return titleMatch || categoryMatch || venueMatch; // Kembalikan true jika salah satu kriteria pencarian terpenuhi
       });
 
-      setFilteredData(filtered);
+      setFilteredData(filtered); // Simpan data yang telah difilter ke dalam state
     } else {
-      setFilteredData(data);
+      setFilteredData(data); // Jika tidak ada pencarian, gunakan semua data
     }
-  }, [search, data]); // Efek ini akan dijalankan setiap kali ada perubahan pada 'search' atau 'data'
+  }, [search, data]); // Efek ini dijalankan setiap kali nilai search atau data berubah
 
   return (
     <>
@@ -43,6 +44,7 @@ export default function Browse({ data }) {
 
       <Navbar onSearch={(term) => router.push(`/browse?search=${term}`)} />
 
+      {/* Komponen CardEvent untuk menampilkan daftar acara */}
       <CardEvent
         data={filteredData} // Kirim data yang sudah difilter ke CardEvent
         title="Browse Events"
@@ -55,11 +57,14 @@ export default function Browse({ data }) {
   );
 }
 
+{
+  /* Fungsi getServerSideProps akan dipanggil pada sisi server sebelum halaman di-render */
+}
 export async function getServerSideProps(context) {
-  const req = await getData("api/v1/events");
-  const res = req.data;
+  const req = await getData("api/v1/events"); // Ambil data events dari API
+  const res = req.data; // Data events yang berhasil diambil
 
   return {
-    props: { data: res },
+    props: { data: res }, // Kirim data events sebagai properti ke dalam komponen Browse
   };
 }

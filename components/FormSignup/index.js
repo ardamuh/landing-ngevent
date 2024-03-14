@@ -114,7 +114,7 @@ export default function FormSignin() {
             type={"text"}
             value={form.role}
             name="role"
-            placeholder="ex: Participant"
+            placeholder="Pekerjaan"
             onChange={handleChange}
           />
         </>

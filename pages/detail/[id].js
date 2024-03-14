@@ -14,27 +14,36 @@ import moment from "moment";
 import { formatDate } from "../../utils/formatDate";
 import Cookies from "js-cookie";
 
+// Komponen DetailPage untuk menampilkan detail acara
 export default function DetailPage({ detailPage, id }) {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState([]); // State untuk menyimpan data acara
   useEffect(() => {
+    // Menggunakan useEffect untuk melakukan fetch data saat komponen dimuat
     const fetchData = async () => {
       try {
+        // Mengambil data acara dari API dengan memanggil getData
         const res = await getData("api/v1/events");
-
+        // Setelah data diterima, disimpan dalam state 'data'
         setData(res.data);
-      } catch (err) {}
+      } catch (err) {
+        // Tangani kesalahan jika ada
+      }
     };
 
-    fetchData();
-  }, []);
+    fetchData(); // Memanggil fungsi fetchData
+  }, []); // Efek hanya dijalankan sekali saat komponen dimuat
 
-  const router = useRouter();
+  const router = useRouter(); // Menginisialisasi router dari Next.js
 
+  // Fungsi handleSubmit untuk menangani navigasi ke halaman checkout
   const handleSubmit = (ticketId, organizer) => {
+    // Mendapatkan token dari cookie
     const token = Cookies.get("token");
+    // Jika pengguna belum masuk, arahkan ke halaman signin
     if (!token) {
       return router.push("/signin");
     } else {
+      // Jika pengguna sudah masuk, arahkan ke halaman checkout dengan menyertakan informasi tiket
       router.push(
         `/checkout/${id}?ticketId=${ticketId}&organizer=${organizer}`
       );
@@ -44,8 +53,8 @@ export default function DetailPage({ detailPage, id }) {
   // Fungsi untuk memformat harga
   const formatPrice = (price) => {
     return price
-      .toLocaleString("id-ID", { style: "currency", currency: "IDR" })
-      .replace(/(\.|,)00$/g, "");
+      .toLocaleString("id-ID", { style: "currency", currency: "IDR" }) // Memformat harga sebagai mata uang IDR
+      .replace(/(\.|,)00$/g, ""); // Menghilangkan angka desimal jika bernilai nol
   };
 
   return (
@@ -60,6 +69,7 @@ export default function DetailPage({ detailPage, id }) {
         <Navbar />
       </section>
 
+      {/* Tampilkan gambar acara dengan tautan API atau gambar default jika tidak tersedia */}
       <div className="preview-image bg-navy text-center">
         <img
           src={
@@ -71,6 +81,8 @@ export default function DetailPage({ detailPage, id }) {
           alt="semina"
         />
       </div>
+
+      {/* Bagian konten detail acara */}
       <div className="details-content container">
         <div className="d-flex flex-wrap justify-content-lg-center gap">
           <div className="d-flex flex-column description">
@@ -121,28 +133,53 @@ export default function DetailPage({ detailPage, id }) {
             </div>
             <hr />
 
+            {/* 
+            Ini adalah bagian dari tampilan detail acara.
+            Menampilkan informasi tiket pertama dari array tiket detail acara.
+            */}
             <h6>{detailPage.tickets[0].type}</h6>
+
+            {/* 
+            Menampilkan harga tiket pertama. Jika harga 0, maka tiket gratis, jika tidak, maka tampilkan harga dan mata uang.
+            */}
             <div className="price my-3">
               {detailPage.tickets[0].price === 0
                 ? "free"
                 : formatPrice(detailPage.tickets[0].price)}
               <span>/person</span>
             </div>
+
+            {/* 
+            Menampilkan lokasi acara dengan ikon marker dan nama venue.
+            Jika nama venue terlalu panjang, maka akan terjadi wrap kata.
+            */}
             <div className="d-flex gap-3 align-items-center card-details">
               <img src="/icons/ic-marker.svg" alt="semina" />{" "}
               <span style={{ maxWidth: "250px", wordWrap: "break-word" }}>
                 {detailPage.venueName}
               </span>
             </div>
+
+            {/* 
+            Menampilkan waktu acara dengan ikon jam.
+            */}
             <div className="d-flex gap-3 align-items-center card-details">
               <img src="/icons/ic-time.svg" alt="semina" />{" "}
               {moment(detailPage.date).format("HH.MM A")}
             </div>
+
+            {/* 
+            Menampilkan tanggal acara dengan ikon kalender.
+            */}
             <div className="d-flex gap-3 align-items-center card-details">
               <img src="/icons/ic-calendar.svg" alt="semina" />{" "}
               {formatDate(detailPage.date)}
             </div>
 
+            {/* 
+            Tombol "Join Now" hanya ditampilkan jika stok tiket tidak kosong.
+            Ketika tombol diklik, akan menjalankan fungsi handleSubmit untuk menavigasi ke halaman checkout.
+            */}
             {detailPage.stock !== 0 && (
               <Button
                 variant={"btn-green"}
@@ -155,6 +192,8 @@ export default function DetailPage({ detailPage, id }) {
             )}
           </div>
         </div>
+
+        {/*
         <div className="mt-5 row justify-content-lg-center">
           {detailPage.tickets.map((ticket, index) =>
             ticket.statusTicketCategory &&
@@ -198,6 +237,7 @@ export default function DetailPage({ detailPage, id }) {
             )
           )}
         </div>
+        */}
       </div>
 
       <CardEvent data={data} title="Similiar Events" subTitle="Next One" />
@@ -208,12 +248,18 @@ export default function DetailPage({ detailPage, id }) {
   );
 }
 
+// Fungsi ini merupakan bagian dari Next.js dan digunakan untuk mendapatkan props yang akan digunakan dalam komponen DetailPage.
 export async function getServerSideProps(context) {
+  // Mengambil data detail acara dari server dengan menggunakan parameter id dari context.
   const req = await getData(`api/v1/events/${context.params.id}`);
 
+  // Respon dari permintaan data.
   const res = req.data;
+
+  // Menampilkan data detail acara ke konsol untuk keperluan debugging atau pengecekan.
   console.log(res);
 
+  // Mengembalikan props yang akan digunakan oleh komponen DetailPage.
   return {
     props: { detailPage: res, id: context.params.id },
   };

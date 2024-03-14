@@ -9,15 +9,16 @@ import { getData } from "../../utils/fetchData";
 import { formatDate } from "../../utils/formatDate";
 import { useRouter } from "next/router";
 
+// Fungsi komponen Checkout
 export default function Checkout({ detailPage }) {
-  const router = useRouter();
-  const { ticketId } = router.query;
+  const router = useRouter(); // Mendapatkan router dari useRouter
+  const { ticketId } = router.query; // Mendapatkan parameter ticketId dari query router
 
   // Fungsi untuk memformat harga
   const formatPrice = (price) => {
     return price
-      .toLocaleString("id-ID", { style: "currency", currency: "IDR" })
-      .replace(/(\.|,)00$/g, "");
+      .toLocaleString("id-ID", { style: "currency", currency: "IDR" }) // Memformat harga dalam mata uang Rupiah
+      .replace(/(\.|,)00$/g, ""); // Menghapus digit desimal dan nol yang tidak penting
   };
 
   return (
@@ -77,9 +78,11 @@ export default function Checkout({ detailPage }) {
   );
 }
 
+// Fungsi untuk mendapatkan props dari server saat runtime
 export async function getServerSideProps(context) {
-  const { token } = context.req.cookies;
+  const { token } = context.req.cookies; // Mendapatkan token dari cookies
 
+  // Jika token tidak tersedia, maka redirect ke halaman signin
   if (!token) {
     return {
       redirect: {
@@ -88,9 +91,12 @@ export async function getServerSideProps(context) {
       },
     };
   }
-  const req = await getData(`/api/v1/events/${context.params.id}`);
 
-  const res = req.data;
+  // Mengambil data detail acara dari server berdasarkan parameter id
+  const req = await getData(`/api/v1/events/${context.params.id}`);
+  const res = req.data; // Menyimpan data detail acara
+
+  // Mengembalikan props yang berisi detailPage dari acara
   return {
     props: { detailPage: res },
   };

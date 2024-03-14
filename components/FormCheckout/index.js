@@ -6,10 +6,12 @@ import { getData, postData } from "../../utils/fetchData";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 
+// Komponen FormCheckout
 export default function FormCheckout({ tickets }) {
-  const router = useRouter();
+  const router = useRouter(); // Dapatkan instance useRouter
   const { ticketId, organizer } = router.query;
 
+  // State untuk menyimpan data formulir dan metode pembayaran
   const [form, setForm] = useState({
     email: "",
     lastName: "",
@@ -19,8 +21,9 @@ export default function FormCheckout({ tickets }) {
     event: router.query.id,
   });
 
-  const [payments, setPayments] = useState([]);
+  const [payments, setPayments] = useState([]); // State untuk menyimpan daftar metode pembayaran
 
+  // Efek yang dijalankan setelah render komponen untuk mendapatkan daftar metode pembayaran
   useEffect(() => {
     const fetctData = async () => {
       try {
@@ -29,39 +32,44 @@ export default function FormCheckout({ tickets }) {
           {},
           Cookies.get("token")
         );
+        // Inisialisasi isChecked untuk setiap metode pembayaran menjadi false
         res.data.forEach((res) => {
           res.isChecked = false;
         });
-        setPayments(res.data);
+        setPayments(res.data); // Set state daftar metode pembayaran
       } catch (err) {}
     };
 
-    fetctData();
+    fetctData(); // Panggil fungsi fetchData
   }, []);
 
+  // Efek yang dijalankan setelah render komponen untuk mengatur metode pembayaran yang dipilih
   useEffect(() => {
-    let paymentId = "";
-    payments.filter((payment) => {
+    let paymentId = ""; // Variabel untuk menyimpan ID metode pembayaran yang dipilih
+    payments.forEach((payment) => {
       if (payment.isChecked) {
-        paymentId = payment._id;
+        paymentId = payment._id; // Jika metode pembayaran dipilih, simpan ID-nya
       }
     });
     setForm({
       ...form,
       payment: paymentId,
-    });
+    }); // Atur ID metode pembayaran pada state formulir
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [payments]);
+  }, [payments]); // Efek ini dijalankan ketika nilai state payments berubah
 
+  // Fungsi untuk menangani perubahan input pada formulir
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({ ...form, [e.target.name]: e.target.value }); // Atur nilai input pada state formulir
   };
 
+  // Fungsi untuk menangani pengiriman formulir checkout
   const handleSubmit = async () => {
     try {
-      const _temp = [];
+      const _temp = []; // Variabel sementara untuk menyimpan informasi tiket yang dipilih
       tickets.forEach((t) => {
         if (t._id === ticketId) {
+          // Jika ID tiket cocok dengan ID tiket yang dipilih, tambahkan informasinya ke dalam tempTickets
           _temp.push({
             ticketCategories: {
               type: t.type,
@@ -85,10 +93,11 @@ export default function FormCheckout({ tickets }) {
       const res = await postData(
         "api/v1/checkout",
         payload,
-        Cookies.get("token")
+        Cookies.get("token") // Kirim data checkout ke server
       );
 
       if (res.data) {
+        // Jika respons berhasil, tampilkan pemberitahuan berhasil dan arahkan pengguna ke dashboard
         toast.success("berhasil checkout", {
           position: "top-right",
           autoClose: 5000,
@@ -103,18 +112,20 @@ export default function FormCheckout({ tickets }) {
     } catch (err) {}
   };
 
+  // Fungsi untuk menangani perubahan status centang pada metode pembayaran
   const handleChangePayment = (e, i) => {
-    const _temp = [...payments];
+    const _temp = [...payments]; // Salin state payments ke dalam variabel sementara
 
-    _temp[i].isChecked = e.target.checked;
+    _temp[i].isChecked = e.target.checked; // Atur status centang pada metode pembayaran yang dipilih
 
+    // Atur status centang pada metode pembayaran lainnya menjadi false
     _temp.forEach((t) => {
       if (t._id !== e.target.value) {
         t.isChecked = false;
       }
     });
 
-    setPayments(_temp);
+    setPayments(_temp); // Perbarui state payments dengan metode pembayaran yang telah diubah statusnya
   };
 
   return (
